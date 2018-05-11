@@ -1,0 +1,2 @@
+# EscalonadorSO
+Trabalho de SO
