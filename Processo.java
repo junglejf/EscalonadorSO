@@ -19,7 +19,7 @@ public class Processo {
 public class Pusuario extends Processo{
 	int prioridade;
 	
-	public Pusuario(int estado, int tamanho, int tempochegada, int temposervico, int taint prioridade){
+	public Pusuario(int estado, int tamanho, int tempochegada, int temposervico, int prioridade){
 		super(estado);
 		super(tamanho);
 		super(tempochegada);
@@ -35,7 +35,7 @@ public class Ptemporeal extends Processo{
 		super(estado);
 		super(tempochegada);
 		super(temposervico);
-		this.tamanho = 512;
+		this.tamanho = tamanho; //tamanho <= 512
 		
 	}
 }

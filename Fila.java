@@ -1,4 +1,5 @@
-import java.util;
+import java.util.*;
+
 
 public class Fila{
 	private ArrayList<Processo> listap;
@@ -46,51 +47,81 @@ public class FilaMaster {
 		this.filas = filas;
 	}
 		
-	public String inserir (Processo p, Fila f ){
+	public String inserir (Processo p, Fila f){
 	}	
 	public String remover(Processo p, Fila f){
 	}	
-	
-	//responsável por fazer a troca de processo entre as filas
-	public String swapper(Fila fatual, Fila fdestino,  MemoriaRam mram,Memoria hd){
-		Pusuario ultimoProcesso = fatual.get(fatual.size()-1);
-		remover(ultimoProcesso,fatual);
-		inserir(ultimoProcesso,fdestino);
-		ultimoProcesso.setEstado(fdestino.getNome);
-		hd.setEspacoAlocado(hd.getEspacoAlocado() + ultimoProcesso.getTamnho());
-		mram.setEspacoAlocado(mram.getEspacoAlocado() + ultimoProcesso.getTamnho());
+
+//__________SUSPENSAO_____________
+
+	//troca de processo entre as filas
+	public String swapper(int posEscolhida, Fila fatual, Fila fdestino,  MemoriaRam mram, Memoria hd){
+		Pusuario processoEscolhido = fatual[posEscolhida]);
+		remover(processoEscolhido,fatual);
+		inserir(processoEscolhido,fdestino);
+		processoEscolhido.setEstado(fdestino.getNome());
+		//altera memoria de acordo com estado que processo vai
+		if(fdestino.getNome().equals("SUSPENSOBLOQUEADO") || fdestino.getNome().equals("PRONTOSUSPENSO")){
+			//hd.setEspacoAlocado(hd.getEspacoAlocado() + processoEscolhido.getTamnho());
+			mram.setEspacoAlocado(mram.getEspacoAlocado() - processoEscolhido.getTamnho());	
+		}
+		if(fdestino.getNome().equals("BLOQUEADO") || fdestino.getNome().equals("PRONTO")){
+			mram.setEspacoAlocado(mram.getEspacoAlocado() + processoEscolhido.getTamnho());	
+		}
+		
 		
 	}
+
+	//coloca processos em ordem de tamanho e desaloca
+	public String desalocaMemo(int memoLiberada, int tamFatual, Fila fatual, Fila fdestino, MemoriaRam mram, Memoria hd){
+		int i, n = 2;
+		int vetorTam [tamFatual][n];	//vetor que ordena processos prontos em tamanho decrescente
+		for(i = 0; i < tamFatual; i++){
+			vetorTam[i][0] = i;
+			vetorTam[i][1] = fatual.getFila(i).getTamnho();
+				
+		}
+
+		//FAZER: ordena vetorTam por tamanho
+		
+		i = 0;
+		while(memoLiberada < tamTr){
+			memoLiberada += vetorTam[i][1];
+			swapper(i, fatual, fdestino, mram, hd);
+			i++;
+		}
+
+	}
 	
-	public String suspenderPuser(Ptemporeal processoTr, Fila fpronto,FilaExec fexecUser,  Fila fsuspenso, MemoriaRam mram, Memoria hd){
+	public String suspenderProc(Ptemporeal processoTr, Fila fupronto, Fila fbloqueado,  Fila fbloqsuspenso, Fila fprontosuspenso, MemoriaRam mram, Memoria hd){
 		int tamTr = processoTr.getTamnho();
+		int tamFpronto = fupronto.getTamnho();
+		int tamFbloq = fbloqueado.getTamnho();
+
 		int memoriaLiberada = 0;
 		//achar espaço para processo tempo real
 		while(memoriaLiberada < tamTr){
 			//checar se tem processo na fila de prontos
+			if(!fbloqueado.isEmpty()){
+				desalocaMemo(memoriaLiberada, tamFbloq, fbloqueado, fbloqsuspenso, mram, hd);
+			}
 			if(!fpronto.isEmpty()){
-				int tamPuser = fpronto.get(fpronto.size()-1).getTamnho(); // pegar o tamanho do processo e verificar se liberou mem suficiente
-				memoriaLibera += tamPuser; 
-				
-				swapper(fpronto, fsuspenso, mram, hd);
-			}else if(!fexecUser.isEmpty()){
-				
-				int tamPuser = fexec.get(fexec.size()-1).getTamnho(); // pegar o tamanho do processo e verificar se liberou mem suficiente
-				memoriaLibera += tamPuser; 
-				
-				swapper(fexec, fsuspenso, mram, hd);
+				desalocaMemo(memoriaLiberada, tamFpronto, fupronto, fprontosuspenso, mram, hd);
+			
 			}
 		}
 	}
 	
+
+//____________EXECUCAO TR_____________
+
 	//Define quem será executado
-	public String executarProcessoTr(Fila fpronto, Fila fexec, Fila fsuspenso, MemoriaRam m, Memoria hd){
-		int espacoAlocado = m.getEspacoAlocado();
-		if(espacoAlocado + fpronto.getFila(0).getTamnho() < m.getEspaco()){
-			inserir(f.getFila(0),fexec);
-		}else{
-			suspender()
-		}		
+	public String executarProcessoTr(Fila fprontotr, Fila fexec, Fila upronto, Fila fbloqueado,  Fila fbloqsuspenso, Fila fprontosuspenso, MemoriaRam mram, Memoria hd){
+		int espacoAlocado = mram.getEspacoAlocado();
+		if(espacoAlocado + fprontotr.getFila(0).getTamanho() > m.getEspaco()){ //se proximo proc tr nao cabe na memoria
+			suspenderProc(fprontotr.getFila(0), fupronto, fbloqueado, fbloqsuspenso, fprontosuspenso, mram, hd);
+		}
+		inserir(f.getFila(0),fexec);	
 	}
 	
 }
