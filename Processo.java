@@ -1,42 +1,85 @@
+package escalonador;
 
+//objeto basico do programa, pode ser de tempo real ou de usuario
 public class Processo {
-	public static final int NOVO = 0 , PRONTO = 1, EXECUTANDO = 2, BLOQUEADO = 3, SUSPENSOBLOQUEADO = 4, PRONTOSUSPENSO = 5, SAIDA = 6 ;
-	int estado; // NOVO = 0 , PRONTO = 1, EXECUTANDO = 2, BLOQUEADO = 3, SUSPENSOBLOQUEADO = 4, PRONTOSUSPENSO = 5, SAIDA = 6
-	int tamanho;
-	int tempochegada;
-	int temposervico;
-	
-	public Processo(int estado, int tamanho, int tempochegada, int temposervico){
-		this.estado= estado;
-		this.tamanho = tamanho;
-		this.tempochegada = tempochegada;
-		this.temposervico = temposervico;
-	}
-	
-	
+    
+    /*
+    enum Estado{            //constantes definidas previamente
+        NOVO, PRONTO, EXECUTANDO, BLOQUEADO, BLOQUEADOSUSPENSO, PRONTOSUSPENSO, FINALIZADO;
+    }
+    
+    private Estado estado;          //tempo real nao pode ser suspenso nem bloqueado
+    */
+    private int tempochegada;
+    private int prioridade;         //tempo real -> 0; usuario -> 1, 2 ou 3
+    private int temposervico;
+    private int tamanho;            //tempo real <= 512
+    private int [] listarec;        //lista de inteiros com 4 elementos, um pra cada recurso. Tempo real -> 0, 0, 0, 0
+    private String estado;          //NOVO, PRONTO, EXECUTANDO, BLOQUEADO (usuario), BLOQUEADO SUSPENSO (usuario), PRONTO SUSPENSO (usuario), FINALIZADO;
+    
+
+    public Processo(int tempochegada, int prioridade, int temposervico, int tamanho, int [] listarec, String estado) {
+        this.tempochegada = tempochegada;
+        this.prioridade = prioridade;
+        this.temposervico = temposervico;
+        this.tamanho = tamanho;
+        this.listarec = listarec;
+        this.estado = estado;
+    }
+
+    public int getTempochegada() {
+        return tempochegada;
+    }
+
+    public void setTempochegada(int tempochegada) {
+        this.tempochegada = tempochegada;
+    }
+
+    public int getPrioridade() {
+        return prioridade;
+    }
+
+    public void setPrioridade(int prioridade) {
+        this.prioridade = prioridade;
+    }
+
+    public int getTemposervico() {
+        return temposervico;
+    }
+
+    public void setTemposervico(int temposervico) {
+        this.temposervico = temposervico;
+    }
+
+    public int getTamanho() {
+        return tamanho;
+    }
+
+    public void setTamanho(int tamanho) {
+        this.tamanho = tamanho;
+    }
+
+    public int[] getListarec() {
+        return listarec;
+    }
+
+    public void setListarec(int[] listarec) {
+        this.listarec = listarec;
+    }
+
+    public String getEstado() {
+        return estado;
+    }
+
+    public void setEstado(String estado) {
+        this.estado = estado;
+    }
+    
+    
+        
 }
 
-public class Pusuario extends Processo{
-	int prioridade;
-	
-	public Pusuario(int estado, int tamanho, int tempochegada, int temposervico, int prioridade){
-		super(estado);
-		super(tamanho);
-		super(tempochegada);
-		super(temposervico);
-		this.prioridade = prioridade;
-	}
-	
-}
 
-public class Ptemporeal extends Processo{
-	
-	public Ptemporeal(int estado, int tamanho, int tempochegada, int temposervico){
-		super(estado);
-		super(tempochegada);
-		super(temposervico);
-		this.tamanho = tamanho; //tamanho <= 512
-		
-	}
-}
+
+
 
