@@ -27,14 +27,29 @@ public class SistemaOperacional {  //antigo FilaMaster
         fila.add(p);
         return "p"+p.intToString(p.getId());
     }
-    public String remover(Processo p, ArrayList<Processo> fila){
+    public String remover(ArrayList<Processo> fila){
+        Processo p = fila.get(0);
+        String s = "p"+p.intToString(p.getId());
         fila.remove(p);
-        return "p"+p.intToString(p.getId());
+        return s;
+    }
+    
+    public String removerMidProc(Fila f, Processo p){
+        return "";
+    }
+    public int buscar_processo(Fila f, Processo p){
+        ArrayList <Processo> processos = f.getListap();
+        for(int i=0; i<processos.size();i++){
+            if(p.getId() == processos.get(i).getId()){
+                return i;
+            }
+        }
+        return -1;
     }
     public String finalizar(Processo p, Fila fexec, MemoriaRam mram){
         //se tempo de servico de p == 0 -> processo finalizado
-        remover(p, fexec.getListap());
-        remover(p, mram.getListap());
+        remover(fexec.getListap());
+        remover(mram.getListap());
         p.setEstado("Finalizado");
         return "";
     }
@@ -62,19 +77,19 @@ public class SistemaOperacional {  //antigo FilaMaster
     //troca de processo entre memorias
     public String swapper(int posEscolhida, Fila fatual, Fila fdestino,  MemoriaRam mram, MemoriaHd hd){
         Processo processoEscolhido = fatual.getListap().get(posEscolhida); //pega processo escolhida da fila
-	remover(processoEscolhido,fatual.getListap());                     //remove da fila atual
+	remover(fatual.getListap());                     //remove da fila atual
 	inserir(processoEscolhido,fdestino.getListap());                   //insere na nova fila  
 	processoEscolhido.setEstado(fdestino.getNome());                   //atualiza estado do processo
         
 	//altera memoria de acordo com estado que processo vai
 	if(fdestino.getNome().equals("BLOQUEADO SUSPENSO") || fdestino.getNome().equals("PRONTO SUSPENSO")){
             mram.setEspacoAlocado(mram.getEspacoAlocado() - processoEscolhido.getTamanho());
-            remover(processoEscolhido, mram.getListap());   //remove processo da ram
+            remover(mram.getListap());   //remove processo da ram
             inserir(processoEscolhido, hd.getListap());     //insere processo no hd
 	}
 	if(fdestino.getNome().equals("BLOQUEADO") || fdestino.getNome().equals("PRONTO")){
             mram.setEspacoAlocado(mram.getEspacoAlocado() + processoEscolhido.getTamanho());	
-            remover(processoEscolhido, hd.getListap());   //remove processo do hd
+            remover(hd.getListap());   //remove processo do hd
             inserir(processoEscolhido, mram.getListap());     //insere processo na ram
 	}
 	return "";	
@@ -153,9 +168,20 @@ public class SistemaOperacional {  //antigo FilaMaster
 	}
 	inserir(proximoTr, fexec.getListap());               //insere processo tr na fila de execucao
         proximoTr.setTemposervico(proximoTr.getTemposervico()-1);//menos 1 pro fim da execucao
-        remover(proximoTr, fprontotr.getListap());          //remove processo tr da fila de pronto
+        remover(fprontotr.getListap());          //remove processo tr da fila de pronto
         
         return "";
+    }
+    
+    public String bloquear(Fila fbloqueado, Fila fpronto, ArrayList<Recurso> recursos ){
+
+        Processo p = fpronto.get(posEscolhida);
+        remover(p,fpronto.getListap())
+        fbloqueado.add(p);          //Adiciona na fila de bloqueados
+        p.setEstado(BLOQUEADO);     // Atualiza estado do processo
+
+        /* Processo continua consumindo memoria ram, e a fila de bloqueados nao possui ordem.
+        */
     }
     
     //__________EXECUCAO USUARIO__________
