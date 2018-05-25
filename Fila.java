@@ -16,7 +16,10 @@ public class Fila{
     public ArrayList<Processo> getListap() {
         return listap;
     }
-
+    
+    public void addProcesso(Processo p){
+        this.listap.add(p);
+    }
     public void setListap(ArrayList<Processo> listap) {
         this.listap = listap;
     }

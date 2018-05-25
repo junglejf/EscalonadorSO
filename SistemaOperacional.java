@@ -23,14 +23,16 @@ public class SistemaOperacional {  //antigo FilaMaster
     }
     */   
 //__________CONTROLE INFERIOR____________
-    public String inserir (Processo p, ArrayList<Processo> fila){
-        fila.add(p);
+    public String inserir (Processo p, Fila fila){
+        fila.addProcesso(p);
+        p.setEstado(fila.getNome());
         return "p"+p.intToString(p.getId());
     }
-    public String remover(ArrayList<Processo> fila){
-        Processo p = fila.get(0);
+    public String remover(Fila fo){
+        Processo p = fo.getListap().get(0);
+        p.setEstadoAnterior(fo.getNome());
         String s = "p"+p.intToString(p.getId());
-        fila.remove(p);
+        fo.getListap().remove(p);
         return s;
     }
     
@@ -48,8 +50,8 @@ public class SistemaOperacional {  //antigo FilaMaster
     }
     public String finalizar(Processo p, Fila fexec, MemoriaRam mram){
         //se tempo de servico de p == 0 -> processo finalizado
-        remover(fexec.getListap());
-        remover(mram.getListap());
+        remover(fexec);
+        
         p.setEstado("Finalizado");
         return "";
     }
@@ -57,9 +59,9 @@ public class SistemaOperacional {  //antigo FilaMaster
 //__________CONTROLE SUPERIOR__________   
     
     //seleciona quem executar
-    public String dispatch(Fila fprontotr, Fila fexec, Fila fupronto, Fila fbloqueado,  Fila fbloqsuspenso, Fila fprontosuspenso, MemoriaRam mram, MemoriaHd hd){
+    public String dispatch(Fila fprontotr, Fila fexec, Fila fupronto, Fila fbloqueado,  Fila fbloqsuspenso, Fila fprontosuspenso, MemoriaRam mram, MemoriaHd hd, Fila fbck1, Fila fbck2, Fila fbck3){
         if(fprontotr.getListap().isEmpty()){ //processo de usuario so executado se nao tem tr na fila
-            executarProcessoUsuario(fexec, fupronto, fbloqueado,   fbloqsuspenso,fprontosuspenso, mram, hd);
+            executarProcessoUsuario(fexec, fbck1, fbck2, fbck3);
         }else{
             while(!fprontotr.getListap().isEmpty()){//enquanto tem processos tr executa
                 executarProcessoTr(fprontotr, fexec, fupronto, fbloqueado,  fbloqsuspenso, fprontosuspenso, mram, hd);
@@ -77,20 +79,18 @@ public class SistemaOperacional {  //antigo FilaMaster
     //troca de processo entre memorias
     public String swapper(int posEscolhida, Fila fatual, Fila fdestino,  MemoriaRam mram, MemoriaHd hd){
         Processo processoEscolhido = fatual.getListap().get(posEscolhida); //pega processo escolhida da fila
-	remover(fatual.getListap());                     //remove da fila atual
-	inserir(processoEscolhido,fdestino.getListap());                   //insere na nova fila  
+	inserir(processoEscolhido,fdestino);                   //insere na nova fila  
+        remover(fatual);                     //remove da fila atual
+	
 	processoEscolhido.setEstado(fdestino.getNome());                   //atualiza estado do processo
         
 	//altera memoria de acordo com estado que processo vai
 	if(fdestino.getNome().equals("BLOQUEADO SUSPENSO") || fdestino.getNome().equals("PRONTO SUSPENSO")){
             mram.setEspacoAlocado(mram.getEspacoAlocado() - processoEscolhido.getTamanho());
-            remover(mram.getListap());   //remove processo da ram
-            inserir(processoEscolhido, hd.getListap());     //insere processo no hd
 	}
 	if(fdestino.getNome().equals("BLOQUEADO") || fdestino.getNome().equals("PRONTO")){
             mram.setEspacoAlocado(mram.getEspacoAlocado() + processoEscolhido.getTamanho());	
-            remover(hd.getListap());   //remove processo do hd
-            inserir(processoEscolhido, mram.getListap());     //insere processo na ram
+
 	}
 	return "";	
     }
@@ -166,28 +166,43 @@ public class SistemaOperacional {  //antigo FilaMaster
 	if(espacoAlocado + fprontotr.getListap().get(0).getTamanho() > mram.getEspaco()){ //se memoria insuficiente
             suspenderProc(fprontotr.getListap().get(0), fupronto, fbloqueado, fbloqsuspenso, fprontosuspenso, mram, hd);//suspende processo usuario
 	}
-	inserir(proximoTr, fexec.getListap());               //insere processo tr na fila de execucao
+	inserir(proximoTr, fexec);               //insere processo tr na fila de execucao
         proximoTr.setTemposervico(proximoTr.getTemposervico()-1);//menos 1 pro fim da execucao
-        remover(fprontotr.getListap());          //remove processo tr da fila de pronto
+        remover(fprontotr);          //remove processo tr da fila de pronto
         
         return "";
     }
     
-    public String bloquear(Fila fbloqueado, Fila fpronto, ArrayList<Recurso> recursos ){
+    public String bloquear(Fila fbloqueado, Fila fpronto ){
 
-        Processo p = fpronto.get(posEscolhida);
-        remover(p,fpronto.getListap())
-        fbloqueado.add(p);          //Adiciona na fila de bloqueados
-        p.setEstado(BLOQUEADO);     // Atualiza estado do processo
+        Processo p = fpronto.getListap().get(0);
+        inserir(p,fbloqueado);
+        remover(fpronto);
 
+        return "";
         /* Processo continua consumindo memoria ram, e a fila de bloqueados nao possui ordem.
         */
     }
     
     //__________EXECUCAO USUARIO__________
-    public String executarProcessoUsuario(Fila fexec, Fila fupronto, Fila fbloqueado,  Fila fbloqsuspenso, Fila fprontosuspenso, MemoriaRam mram, MemoriaHd hd){
-        
+    public String executarProcessoUsuario(Fila fexec, Fila fbck1, Fila fbck2, Fila fbck3){
+        if(!fbck1.getListap().isEmpty()){
+            Processo proximoPu = fbck1.getListap().get(0);
+            inserir(proximoPu, fexec);
+            remover(fbck1);
+        }else if(!fbck2.getListap().isEmpty()){
+            Processo proximoPu = fbck2.getListap().get(0);
+            inserir(proximoPu, fexec);
+            remover(fbck2);
+        }else if(!fbck3.getListap().isEmpty()){
+            Processo proximoPu = fbck3.getListap().get(0);
+            inserir(proximoPu, fexec);
+            remover(fbck3);
+        }else{
+            System.out.println("Nenhum processo de usuario na fila.");
+        }
         return "";
+
     }
     
     //__Transforma o ID de um processo em uma string para dar print na tela__

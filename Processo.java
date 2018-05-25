@@ -20,14 +20,16 @@ public class Processo {
     private String estado;          //NOVO, PRONTO, EXECUTANDO, BLOQUEADO (usuario), BLOQUEADO SUSPENSO (usuario), PRONTO SUSPENSO (usuario), FINALIZADO;
     private static int numeroDoProcesso = 0;
     private final int id;
+    private String estado_anterior;
 
-    public Processo(int tempochegada, int prioridade, int temposervico, int tamanho, int [] listarec, String estado) {
+    public Processo(int tempochegada, int prioridade, int temposervico, int tamanho, int [] listarec, String estado, String estado_anterior) {
         this.tempochegada = tempochegada;
         this.prioridade = prioridade;
         this.temposervico = temposervico;
         this.tamanho = tamanho;
         this.listarec = listarec;
         this.estado = estado;
+        this.estado_anterior = estado_anterior;
         this.id = numeroDoProcesso++;
     }
 
@@ -86,6 +88,14 @@ public class Processo {
 
     public void setEstado(String estado) {
         this.estado = estado;
+    }
+    
+    public String getEstadoAnterior() {
+        return estado_anterior;
+    }
+
+    public void setEstadoAnterior(String estado) {
+        this.estado_anterior = estado;
     }
     
     public int getId(){
