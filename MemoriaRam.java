@@ -1,14 +1,15 @@
-package escalonador;
+package escalonadorso;
 
 import java.util.ArrayList;
 
 //Memoria principal com tamanho limitado que recebe processos prontos, bloqueados e executando
-public class MemoriaRam{
+public class MemoriaRam extends Memoria{
     private int espaco;                     //tamanho fixo de 8192
     private int espacoAlocado;              //total de memoria ocupada pelos processos
     private ArrayList<Processo> listap;     //lista de processos presentes na memoria
 	
-    public MemoriaRam(int espaco, int espacoAlocado, ArrayList<Processo> listap){
+    public MemoriaRam(Processo utilizador, boolean disponibilidade, String nome,int espaco, int espacoAlocado, ArrayList<Processo> listap){
+        super(utilizador,disponibilidade,nome,espaco,espacoAlocado);
 	this.espaco = 8192;
         this.espacoAlocado = espacoAlocado;
         this.listap = listap;

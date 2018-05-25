@@ -1,11 +1,15 @@
-package escalonador;
+package escalonadorso;
+import java.util.*;
 
 //2 impressoras, 1 scanner, 1 modem, 2 cds
 public class Recurso{
-    private Processo utilizador;            //objeto processo que esta usando recurso, null se nao estiver sendo usado
+    Processo utilizador;            //objeto processo que esta usando recurso, null se nao estiver sendo usado
     private boolean disponibilidade;        //se recurso ta sendo usando ou ta livre
     private String nome;            
-	
+            
+    public Recurso(){
+        
+    }
     public Recurso(Processo utilizador, boolean disponibilidade, String nome){
 	this.utilizador = utilizador;
 	this.disponibilidade = disponibilidade;

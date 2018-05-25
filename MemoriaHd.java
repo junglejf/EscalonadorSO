@@ -1,13 +1,14 @@
-package escalonador;
+package escalonadorso;
 
 import java.util.ArrayList;
 
 //Memoria secundaria com espaco ilimitado que recebe processos suspensos
-public class MemoriaHd{     //antigo Memoria
+public class MemoriaHd extends Memoria{     //antigo Memoria
     private int espacoAlocado;              //total de memoria ocupada pelos processos
     private ArrayList<Processo> listap;     //lista de processos presentes na memoria
 	
-    public MemoriaHd(int espacoAlocado, ArrayList<Processo> listap){
+    public MemoriaHd(Processo utilizador, boolean disponibilidade, String nome,int espaco, int espacoAlocado, ArrayList<Processo> listap){
+        super(utilizador,disponibilidade,nome,espaco,espacoAlocado);
         this.espacoAlocado = espacoAlocado;
         this.listap = listap;
     }

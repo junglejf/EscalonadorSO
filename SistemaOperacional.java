@@ -1,10 +1,12 @@
-package escalonador;
+package escalonadorso;
 
 import java.util.ArrayList;
 
 //Responsavel por chamar agentes para inserir, remover, executar, suspender, bloquear e finalizar processos
 public class SistemaOperacional {  //antigo FilaMaster
     
+    public SistemaOperacional(){
+    }
     /*
     private Fila [] filas;
 	
@@ -19,21 +21,22 @@ public class SistemaOperacional {  //antigo FilaMaster
     public void setFilas(Fila[] filas) {
         this.filas = filas;
     }
-    */
-    
+    */   
 //__________CONTROLE INFERIOR____________
     public String inserir (Processo p, ArrayList<Processo> fila){
         fila.add(p);
+        return "p"+p.intToString(p.getId());
     }
     public String remover(Processo p, ArrayList<Processo> fila){
         fila.remove(p);
-        
+        return "p"+p.intToString(p.getId());
     }
     public String finalizar(Processo p, Fila fexec, MemoriaRam mram){
         //se tempo de servico de p == 0 -> processo finalizado
         remover(p, fexec.getListap());
         remover(p, mram.getListap());
         p.setEstado("Finalizado");
+        return "";
     }
 
 //__________CONTROLE SUPERIOR__________   
@@ -41,12 +44,14 @@ public class SistemaOperacional {  //antigo FilaMaster
     //seleciona quem executar
     public String dispatch(Fila fprontotr, Fila fexec, Fila fupronto, Fila fbloqueado,  Fila fbloqsuspenso, Fila fprontosuspenso, MemoriaRam mram, MemoriaHd hd){
         if(fprontotr.getListap().isEmpty()){ //processo de usuario so executado se nao tem tr na fila
-            executarProcessoUsuario();
+            executarProcessoUsuario(fexec, fupronto, fbloqueado,   fbloqsuspenso,fprontosuspenso, mram, hd);
         }else{
             while(!fprontotr.getListap().isEmpty()){//enquanto tem processos tr executa
                 executarProcessoTr(fprontotr, fexec, fupronto, fbloqueado,  fbloqsuspenso, fprontosuspenso, mram, hd);
             }
         }
+        
+        return "";
     }
 
     //_________BLOQUEIO
@@ -72,7 +77,7 @@ public class SistemaOperacional {  //antigo FilaMaster
             remover(processoEscolhido, hd.getListap());   //remove processo do hd
             inserir(processoEscolhido, mram.getListap());     //insere processo na ram
 	}
-		
+	return "";	
     }
 
     //coloca processos em ordem de tamanho e desaloca
@@ -113,6 +118,7 @@ public class SistemaOperacional {  //antigo FilaMaster
 	}
         
         //retorna quando liberou memoria suficiente ou acabou a fila
+        return "";
     }
 	
     public String suspenderProc(Processo processoTr, Fila fupronto, Fila fbloqueado,  Fila fbloqsuspenso, Fila fprontosuspenso, MemoriaRam mram, MemoriaHd hd){
@@ -133,6 +139,7 @@ public class SistemaOperacional {  //antigo FilaMaster
             }
             //caso contrario espera algum processo sair de execucao
 	}
+        return "";
     }
 	
     //____________EXECUCAO TR_____________
@@ -147,11 +154,16 @@ public class SistemaOperacional {  //antigo FilaMaster
 	inserir(proximoTr, fexec.getListap());               //insere processo tr na fila de execucao
         proximoTr.setTemposervico(proximoTr.getTemposervico()-1);//menos 1 pro fim da execucao
         remover(proximoTr, fprontotr.getListap());          //remove processo tr da fila de pronto
+        
+        return "";
     }
     
     //__________EXECUCAO USUARIO__________
-    public String executarProcessoUsuario(Fila fexec, Fila fupronto, Fila fbloqueado,  Fila fbloqsuspenso, Fila fprontosuspenso, MemoriaRam mram, MemoriaHd hd)){
+    public String executarProcessoUsuario(Fila fexec, Fila fupronto, Fila fbloqueado,  Fila fbloqsuspenso, Fila fprontosuspenso, MemoriaRam mram, MemoriaHd hd){
         
+        return "";
     }
-	
+    
+    //__Transforma o ID de um processo em uma string para dar print na tela__
+
 }

@@ -1,4 +1,4 @@
-package escalonador;
+package escalonadorso;
 
 import java.util.ArrayList;
 
@@ -27,6 +27,14 @@ public class Fila{
 
     public void setNome(String nome) {
         this.nome = nome;
+    }
+    
+    public void imprimeFila(Fila f){
+        System.out.println(f.getNome());
+        for(int i=0; i<f.getListap().size();i++){
+            Processo p = f.getListap().get(i);
+            p.imprimeProcesso(p);
+        }
     }
 }
 
