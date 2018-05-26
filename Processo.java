@@ -2,14 +2,6 @@ package escalonadorso;
 
 //objeto basico do programa, pode ser de tempo real ou de usuario
 public class Processo {
-    
-    /*
-    enum Estado{            //constantes definidas previamente
-        NOVO, PRONTO, EXECUTANDO, BLOQUEADO, BLOQUEADOSUSPENSO, PRONTOSUSPENSO, FINALIZADO;
-    }
-    
-    private Estado estado;          //tempo real nao pode ser suspenso nem bloqueado
-    */
     private int tempochegada;
     private int prioridade;         //tempo real -> 0; usuario -> 1, 2 ou 3
     private int temposervico;
