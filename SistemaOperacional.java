@@ -123,13 +123,13 @@ public class SistemaOperacional {  //antigo FilaMaster
     }
     
     //executa processo
-    public String processa(Cpu processador, Fila fbck1, Fila fbck2, Fila fbck3, MemoriaRam mram){
+    public String processa(Cpu processador, Fila fbck1, Fila fbck2, Fila fbck3, MemoriaRam mram,int[] lrec, Fila fbloqueado){
         Processo proc = processador.getUtilizador();
         if(proc == null){
             return "Nao tem processo.";
         }
         proc.setTemposervico(proc.getTemposervico() - 1);
-        if(proc.getTemposervico() < 0){
+        if(proc.getTemposervico() <= 0){
             //se tempo de servico de p == 0 -> processo finalizado
             finalizar(proc, processador, mram);
         }
@@ -138,14 +138,33 @@ public class SistemaOperacional {  //antigo FilaMaster
             if(processador.getQuantum() == 0){
                 String f_anterior = proc.getEstadoAnterior();
                 if(f_anterior.equals(fbck1.getNome())){ //se tava na fila 1 vai pra fila 2
-                    inserePriori(proc, fbck2);
-                    remover(fbck1);
+                    remover(fbck1); //de qqr forma vai sair do fbck1
+                    if((fdbck1.getDispositivoDaListaRec(0)<=lrec[0])||(fdbck1.getDispositivoDaListaRec(1)<=lrec[1])||(fdbck1.getDispositivoDaListaRec(2)<=lrec[2])||(fdbck1.getDispositivoDaListaRec(3)<=lrec[3])){ //teste para saber se o recurso volta para o conjunto de fila de prontos, ou vai pra bloqueado
+                        lrec=bloquear(fbloqueado, proc,lrec);
+                    }else{
+                        inserePriori(proc, fbck2);
+                    }
+
                 }else if(f_anterior.equals(fbck2.getNome())){ //se tava na fila 2 vai pra fila 3
-                    inserePriori(proc, fbck3);
-                    remover(fbck2);
+                    remover(fbck2); //de qqr forma vai sair do fbck1
+
+                    if((fdbck2.getDispositivoDaListaRec(0)<=lrec[0])||(fdbck2.getDispositivoDaListaRec(1)<=lrec[1])||(fdbck2.getDispositivoDaListaRec(2)<=lrec[2])||(fdbck2.getDispositivoDaListaRec(3)<=lrec[3])){ //teste para saber se o recurso volta para o conjunto de fila de prontos, ou vai pra bloqueado
+            
+                        lrec=bloquear(fbloqueado, proc);
+
+                    }else{
+                        inserePriori(proc, fbck3);
+                    }
+                
                 }else if(f_anterior.equals(fbck3.getNome())){ //se tava na fila 3 vai pra fila 1 
-                    inserePriori(proc, fbck1);
-                    remover(fbck3);
+                    remover(fbck3); //de qqr forma vai sair do fbck1
+
+                    if((fdbck3.getDispositivoDaListaRec(0)<=lrec[0])||(fdbck3.getDispositivoDaListaRec(1)<=lrec[1])||(fdbck3.getDispositivoDaListaRec(2)<=lrec[2])||(fdbck3.getDispositivoDaListaRec(3)<=lrec[3])){ //teste para saber se o recurso volta para o conjunto de fila de prontos, ou vai pra bloqueado
+                        lrec=bloquear(fbloqueado, proc);
+                    }else{
+                        inserePriori(proc, fbck1);
+                    }
+                    
                 }
                 processador.setDisponibilidade(true);
             }
@@ -212,13 +231,16 @@ public class SistemaOperacional {  //antigo FilaMaster
 
     //_________BLOQUEIO______________
     
-    public String bloquear(Fila fbloqueado, Fila fpronto){
+    public Int[] bloquear(Fila fbloqueado, Processo p,Lista lrec){
 
-        Processo p = fpronto.getListap().get(0);
+        
         inserir(p,fbloqueado);
         remover(fpronto);
+        addRec(fbloc, lrec,proc);
 
-        return "";
+  
+
+        return lrec;
         /* Processo continua consumindo memoria ram, e a fila de bloqueados nao possui ordem.
         */
     }
