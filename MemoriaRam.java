@@ -6,13 +6,13 @@ import java.util.ArrayList;
 public class MemoriaRam extends Memoria{
     private int espaco;                     //tamanho fixo de 8192
     private int espacoAlocado;              //total de memoria ocupada pelos processos
-    private ArrayList<Fila> filas;     //lista de processos presentes na memoria
+    private ArrayList<Processo> fila_proc;     //lista de processos presentes na memoria
 	
-    public MemoriaRam(Processo utilizador, boolean disponibilidade, String nome,int espaco, int espacoAlocado, ArrayList<Fila> filas){
+    public MemoriaRam(Processo utilizador, boolean disponibilidade, String nome,int espaco, int espacoAlocado, ArrayList<Processo> fila_proc){
         super(utilizador,disponibilidade,nome,espaco,espacoAlocado);
 	this.espaco = 8192;
         this.espacoAlocado = espacoAlocado;
-        this.filas = filas;
+        this.fila_proc = fila_proc;
     }
 
     public int getEspaco() {
@@ -31,13 +31,12 @@ public class MemoriaRam extends Memoria{
         this.espacoAlocado = espacoAlocado;
     }
 
-    public ArrayList<Fila> getFilas() {
-        return this.filas;
+    public ArrayList<Processo> getFila_proc() {
+        return fila_proc;
     }
-    
 
-    public void setFilas(ArrayList<Fila> fila) {
-        this.filas = fila;
+    public void setFila_proc(ArrayList<Processo> fila_proc) {
+        this.fila_proc = fila_proc;
     }
     
     

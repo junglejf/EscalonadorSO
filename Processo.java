@@ -14,8 +14,6 @@ public class Processo {
     private final int id;
     private String estado_anterior;
 
-    private int[] temporecursos=int[6];
-
     public Processo(int tempochegada, int prioridade, int temposervico, int tamanho, int [] listarec, String estado, String estado_anterior) {
         this.tempochegada = tempochegada;
         this.prioridade = prioridade;
@@ -25,24 +23,6 @@ public class Processo {
         this.estado = estado;
         this.estado_anterior = estado_anterior;
         this.id = numeroDoProcesso++;
-
-        int controle = (temposervico-1)/(listarec[0]+listarec[1]+listarec[2]+listarec[3]); // 1 referente ao quantum para finalizar o processo ao final.
-
-        for(int i = 0; i<6;i++){
-            temporecursos[i]=listarec[i]*controle;
-        }
-    }
-    public int[] getTempoRecursos(){
-        return this.temporecursos;
-    }
-    public int getDispositivoTempoRecursos(int pos){
-        return (this.getTempoRecursos[pos]);
-    }
-    public void setTempoRecursos(int[] tr){
-        this.temporecursos=tr;
-    }
-    public void setDisipositivoDaListaRec(int pos, int valor){
-        this.temporecursos[pos]=valor;
     }
 
     public int getTempochegada() {
