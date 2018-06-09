@@ -13,37 +13,46 @@ public class Processo {
     private static int numeroDoProcesso = 0;
     private final int id;
     private String estado_anterior;
-
-    private int[] temporecursos=int[6];
+    
+    public int im,s,m,cd;
+    
+    public Recurso ocupando;
+    public boolean marca =false;
 
     public Processo(int tempochegada, int prioridade, int temposervico, int tamanho, int [] listarec, String estado, String estado_anterior) {
         this.tempochegada = tempochegada;
         this.prioridade = prioridade;
-        this.temposervico = temposervico;
+        
         this.tamanho = tamanho;
         this.listarec = listarec;
         this.estado = estado;
         this.estado_anterior = estado_anterior;
         this.id = numeroDoProcesso++;
-
-        int controle = (temposervico-1)/(listarec[0]+listarec[1]+listarec[2]+listarec[3]); // 1 referente ao quantum para finalizar o processo ao final.
-
-        for(int i = 0; i<6;i++){
-            temporecursos[i]=listarec[i]*controle;
+        
+        this.ocupando=null;
+            
+        int nrec=1;//No minimo CPU --------------------------n sei se essa logica esta correta #### CONFERIR
+        for(int i = 0; i < this.getListarec().length; i++){
+            nrec += this.listarec[i];//sendo 1 o proprio cpu
+            
         }
+        
+        
+        int t = temposervico;
+        int porcentagem = t/nrec; //tempo em cada recurso
+        
+        this.im=this.listarec[0]*porcentagem;;
+        this.m = this.listarec[1]*porcentagem;
+        this.s = this.listarec[2]*porcentagem;
+        this.cd=this.listarec[3]*porcentagem;
+
+        
+        
+        this.temposervico=porcentagem;
+
+        
     }
-    public int[] getTempoRecursos(){
-        return this.temporecursos;
-    }
-    public int getDispositivoTempoRecursos(int pos){
-        return (this.getTempoRecursos[pos]);
-    }
-    public void setTempoRecursos(int[] tr){
-        this.temporecursos=tr;
-    }
-    public void setDisipositivoDaListaRec(int pos, int valor){
-        this.temporecursos[pos]=valor;
-    }
+    
 
     public int getTempochegada() {
         return this.tempochegada;
