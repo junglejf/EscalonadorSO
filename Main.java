@@ -58,13 +58,13 @@ public class Main {
         
     //________TESTE________
         Random random = new Random();
-        //int[] fila_rec = {0, 0, 0, 0};
+        //int[] fila_rec2 = {0, 0, 0, 0};
         
         //cria processos randomicamente e acrescenta na fila
         for(int i=0; i<10;i++){//impressoras        modem            scanner             cds  
-            int[] fila_rec = {random.nextInt(2),random.nextInt(2),random.nextInt(2),random.nextInt(2)};
+            int[] fila_rec = {random.nextInt(0),random.nextInt(0),random.nextInt(0),random.nextInt(0)};
                                 //tchegada  prioridade          tservico             tamanho       recursos   estado estado anterior
-            Processo p = new Processo(i, 1, 5, random.nextInt(512), fila_rec, "NOVO", "");
+            Processo p = new Processo(i+1, 1, random.nextInt(20)+7, random.nextInt(512), fila_rec, "NOVO", "");
             so.inserir(p, fentrada);
         }
         
@@ -220,7 +220,7 @@ public class Main {
                 
                 fbck1.imprimeFila(fbck1);
                 fbck2.imprimeFila(fbck2);
-                 fbck3.imprimeFila(fbck3);
+                fbck3.imprimeFila(fbck3);
                 System.out.println();
                 so.processa_bloqueado(fbloqueado,fpronto_u,imp1, imp2,modem,scan,cd1,cd2);
         

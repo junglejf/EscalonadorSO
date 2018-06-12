@@ -42,13 +42,13 @@ public class Processo {
         int porcentagem = t/nrec; //tempo em cada recurso
         
         this.im=this.listarec[0]*porcentagem;;
-        this.m = this.listarec[1]*porcentagem;
-        this.s = this.listarec[2]*porcentagem;
+        this.s = this.listarec[1]*porcentagem;
+        this.m = this.listarec[2]*porcentagem;
         this.cd=this.listarec[3]*porcentagem;
 
         
         
-        this.temposervico=porcentagem;
+        this.temposervico=temposervico;
 
         
     }
@@ -138,6 +138,8 @@ public class Processo {
         for(int i =0; i<p.getListarec().length;i++){
             System.out.print("<"+intToString(p.getDispositivoDaListaRec(i))+">, ");
         }
+        
+        System.out.println(" - "+p.getEstado());
         System.out.println();
     }
     public String intToString(int n){

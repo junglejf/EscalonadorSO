@@ -487,16 +487,16 @@ public class SistemaOperacional {  //antigo FilaMaster
                         qualrecurso=3;
                     }
                     else if(p.ocupando==cd2){
-                        System.out.println("tempo de bloqueio antes: "+ p.cd);
+                        System.out.println("-----------------------------------------\ntempo de bloqueio antes: "+ p.cd);
                         tempodebloqueio=--p.cd;
                         qualrecurso=3;
                     }
                     System.out.println("tempo de bloqueio depois: "+ tempodebloqueio);
-                    System.out.println("Dados referentes a P"+p.getId());
+                    System.out.println("Dados referentes a P"+p.getId()+"\n------------------------------------------");
 
 
 
-                    if ( p.getTemposervico() <= 0 || tempodebloqueio<=0){ //se o processo nao precisa continuar usando recurso
+                    if ( tempodebloqueio<=0){ //se o processo nao precisa continuar usando recurso
 
                             //mudanca de estados
                             
