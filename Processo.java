@@ -13,17 +13,46 @@ public class Processo {
     private static int numeroDoProcesso = 0;
     private final int id;
     private String estado_anterior;
+    
+    public int im,s,m,cd;
+    
+    public Recurso ocupando;
+    public boolean marca =false;
 
     public Processo(int tempochegada, int prioridade, int temposervico, int tamanho, int [] listarec, String estado, String estado_anterior) {
         this.tempochegada = tempochegada;
         this.prioridade = prioridade;
-        this.temposervico = temposervico;
+        
         this.tamanho = tamanho;
         this.listarec = listarec;
         this.estado = estado;
         this.estado_anterior = estado_anterior;
         this.id = numeroDoProcesso++;
+        
+        this.ocupando=null;
+            
+        int nrec=1;//No minimo CPU --------------------------n sei se essa logica esta correta #### CONFERIR
+        for(int i = 0; i < this.getListarec().length; i++){
+            nrec += this.listarec[i];//sendo 1 o proprio cpu
+            
+        }
+        
+        
+        int t = temposervico;
+        int porcentagem = t/nrec; //tempo em cada recurso
+        
+        this.im=this.listarec[0]*porcentagem;;
+        this.s = this.listarec[1]*porcentagem;
+        this.m = this.listarec[2]*porcentagem;
+        this.cd=this.listarec[3]*porcentagem;
+
+        
+        
+        this.temposervico=temposervico;
+
+        
     }
+    
 
     public int getTempochegada() {
         return this.tempochegada;
@@ -109,6 +138,8 @@ public class Processo {
         for(int i =0; i<p.getListarec().length;i++){
             System.out.print("<"+intToString(p.getDispositivoDaListaRec(i))+">, ");
         }
+        
+        System.out.println(" - "+p.getEstado());
         System.out.println();
     }
     public String intToString(int n){

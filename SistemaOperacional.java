@@ -231,7 +231,7 @@ public class SistemaOperacional {  //antigo FilaMaster
             Processo proximoPu = fpronto_u.getListap().get(0);
             int [] l = proximoPu.getListarec();
             if(!listaZerada(l)){            //se processo usa recursos
-                bloquear(fbloqueado, fpronto_u, imp1, imp2, modem, scan, cd1, cd2);
+                bloquear(fbloqueado, fpronto_u, imp1, imp2, modem, scan, cd1, cd2,proximoPu);
             }else{
                 inserePriori(proximoPu, fbck1);//insere na primeira fila do feedback com prioridade
                 remover(fpronto_u);
@@ -286,189 +286,65 @@ public class SistemaOperacional {  //antigo FilaMaster
 
     //_________BLOQUEIO______________
     
-    public String bloquear(Fila fbloqueado, Fila fpronto, Recurso imp1, Recurso imp2, Recurso modem, Recurso scan, Recurso cd1, Recurso cd2){
-        
-        //inserir processo na lista de processos, mudar recurso, chama execrec
-        //addRec(....)
-        
-        
-        Processo p = fpronto.getListap().get(0);
-        int t = p.getTamanho();
-        int nrec = 1; //No minimo CPU
-        for(int i = 0; i < p.getListarec().length; i++){
-            nrec += p.getListarec()[i];
-        }
-        int porcentagem = t/nrec; //tempo em cada recurso
+    public String bloquear(Fila fbloqueado, Fila fpronto_u, Recurso imp1, Recurso imp2, Recurso modem, Recurso scan, Recurso cd1, Recurso cd2,Processo p){
+
+       
         boolean ok = false; //se conseguiu usar recurso
-        int i1 = porcentagem, i2 = porcentagem, m = porcentagem, s = porcentagem, c1 = porcentagem, c2 = porcentagem;
-        while(!listaZerada(p.getListarec())){
-            
+        System.out.println("imp1: "+p.im+" IMP1:"+imp1.isDisponibilidade()+" IMP2:"+imp2.isDisponibilidade());
+        System.out.println("scanner: "+p.s+" Scanner:" +scan.isDisponibilidade());
+        System.out.println("modem: "+p.m+" modem:"+modem.isDisponibilidade());
+        System.out.println("Tcd1: "+p.cd+" cd1:"+cd1.isDisponibilidade()+ " cd2:"+cd2.isDisponibilidade());
+
         //__________IMPRESSORA__________
-            if(p.getListarec()[0] == 1){
-                if(imp1.isDisponibilidade() && i1 > 0){
-                    i1--;
+            if(p.getListarec()[0] == 1 && imp1.isDisponibilidade()){//se usa impressora,se impressora esta disponivel, e se o tempo de uso da impressora > 0
+
                     imp1.setDisponibilidade(false);
-                    ok = true;
-                    if(i1 == 0){
-                        int [] nova = p.getListarec();
-                        nova[0] = 0;
-                        p.setListarec(nova);
-                        imp1.setDisponibilidade(true);
-                    }
-                }else if(imp2.isDisponibilidade()){
-                    i2--;
+                    ok = true;//ainda nao sei pra que serve
+                    p.ocupando=imp1;//qual recurso p esta ocupando
+            
+  
+            }else if(p.getListarec()[0] == 1 && imp2.isDisponibilidade()){
+                    
                     imp2.setDisponibilidade(false);
                     ok = true;
-                    if(i2 == 0){
-                        int [] nova = p.getListarec();
-                        nova[0] = 0;
-                        p.setListarec(nova);
-                        imp2.setDisponibilidade(true);
-                    }
-                }
-            }else if(p.getListarec()[0] == 2){
-                if(i1 > 0 && i2 > 0){
-                    if(imp1.isDisponibilidade() && imp2.isDisponibilidade()){
-                        i1--;
-                        i2--;
-                        imp1.setDisponibilidade(false);
-                        imp2.setDisponibilidade(false);
-                        ok = true;
-                        if(i1 == 0 && i2 == 0){
-                            int [] nova = p.getListarec();
-                            nova[0] = 0;
-                            p.setListarec(nova);
-                            imp1.setDisponibilidade(true);
-                            imp2.setDisponibilidade(true);
-                        }
-                    }else if(imp1.isDisponibilidade()){
-                        i1--;
-                        imp1.setDisponibilidade(false);
-                        ok = true;
-                        if(i1 == 0){
-                            int [] nova = p.getListarec();
-                            nova[0] = 1;
-                            p.setListarec(nova);
-                            imp1.setDisponibilidade(true);
-                        }
-                    }else if(imp2.isDisponibilidade()){
-                        i2--;
-                        imp2.setDisponibilidade(false);
-                        ok = true;
-                        if(i2 == 0){
-                            int [] nova = p.getListarec();
-                            nova[0] = 1;
-                            p.setListarec(nova);
-                            imp2.setDisponibilidade(true);
-                        }
-                    }
-                }
-                
+                    p.ocupando=imp2;
             }
-        
-        //_____________CD______________
-            if(p.getListarec()[3] == 1){
-                if(cd1.isDisponibilidade() && c1 > 0){
-                    c1--;
-                    cd1.setDisponibilidade(false);
-                    ok = true;;
-                    if(c1 == 0){
-                        int [] nova = p.getListarec();
-                        nova[3] = 0;
-                        p.setListarec(nova);
-                        cd1.setDisponibilidade(true);
-                    }
-                }else if(cd2.isDisponibilidade()){
-                    c2--;
-                    cd2.setDisponibilidade(false);
-                    ok = true;
-                    if(c2 == 0){
-                        int [] nova = p.getListarec();
-                        nova[3] = 0;
-                        p.setListarec(nova);
-                        cd2.setDisponibilidade(true);
-                    }
-                }
-            }else if(p.getListarec()[3] == 2){
-                if(c1 > 0 && c2 > 0){
-                    if(cd1.isDisponibilidade() && cd2.isDisponibilidade()){
-                        c1--;
-                        c2--;
-                        cd1.setDisponibilidade(false);
-                        cd2.setDisponibilidade(false);
-                        ok = true;
-                        if(c1 == 0 && c2 == 0){
-                            int [] nova = p.getListarec();
-                            nova[3] = 0;
-                            p.setListarec(nova);
-                            cd1.setDisponibilidade(true);
-                            cd2.setDisponibilidade(true);
-                        }
-                    }else if(cd1.isDisponibilidade()){
-                        c1--;
-                        cd1.setDisponibilidade(false);
-                        ok = true;
-                        if(c1 == 0){
-                            int [] nova = p.getListarec();
-                            nova[3] = 1;
-                            p.setListarec(nova);
-                            cd1.setDisponibilidade(true);
-                        }
-                    }else if(cd2.isDisponibilidade()){
-                        c2--;
-                        cd2.setDisponibilidade(false);
-                        ok = true;
-                        if(c2 == 0){
-                            int [] nova = p.getListarec();
-                            nova[3] = 1;
-                            p.setListarec(nova);
-                            cd2.setDisponibilidade(true);
-                        }
-                    }
-                }
-                
-            }
-            
-        //_____________MODEM______________
-            if(p.getListarec()[1] == 1){
-                if(modem.isDisponibilidade() && m > 0){
-                    m--;
-                    modem.setDisponibilidade(false);
-                    ok = true;
-                    if(m == 0){
-                        int [] nova = p.getListarec();
-                        nova[1] = 0;
-                        p.setListarec(nova);
-                        modem.setDisponibilidade(true);
-                    }
-                }
-            }
-        
-        //_____________SCANNER______________
-            if(p.getListarec()[2] == 1){
-                if(scan.isDisponibilidade() && s > 0){
-                    s--;
+            //_____________SCANNER______________
+            else if(p.getListarec()[1] == 1 && scan.isDisponibilidade()){   
+                    p.s--;
                     scan.setDisponibilidade(false);
                     ok = true;
-                    if(s == 0){
-                        int [] nova = p.getListarec();
-                        nova[2] = 0;
-                        p.setListarec(nova);
-                        scan.setDisponibilidade(true);
-                    }
-                }
+                    p.ocupando=scan;   
+            }  
+        //_____________MODEM______________
+            else if(p.getListarec()[2] == 1 && modem.isDisponibilidade()){
+                
+                    p.m--;
+                    modem.setDisponibilidade(false);
+                    ok = true;
+                    p.ocupando=modem; 
             }
-            
-            if(ok == true){
+          
+        //_____________CD______________
+            else if(p.getListarec()[3] == 1 && cd1.isDisponibilidade() ){
+                    cd1.setDisponibilidade(false);
+                    ok = true;
+                    p.ocupando=cd1;
+                           
+            }else if(p.getListarec()[3] == 1 && cd2.isDisponibilidade() ){
+                    cd2.setDisponibilidade(false);
+                    ok = true;
+                    p.ocupando=cd2;
+   
+
+            }if(ok == true){
                 inserir(p,fbloqueado);
-                remover(fpronto);
-                p.setTemposervico(p.getTemposervico()-1);
+                fpronto_u.getListap().remove(p);
+                p.marca=true;
+                return "";
             }
-        }
         
         return "";
-        /* Processo continua consumindo memoria ram, e a fila de bloqueados nao possui ordem.
-        */
     }
     
     //__________SUSPENSAO_____________
@@ -572,5 +448,96 @@ public class SistemaOperacional {  //antigo FilaMaster
 	return "";	
     }
    //__Transforma o ID de um processo em uma string para dar print na tela__
+    public void processa_bloqueado(Fila fbloqueado, Fila fpronto_u, Recurso imp1, Recurso imp2, Recurso modem, Recurso scan, Recurso cd1, Recurso cd2){
+        Processo p;
+        System.out.println("Processando bloqueados: tamanho da lista de bloqueados: "+ fbloqueado.getListap().size());
+        int contador=0;                
+        Processo lp[]= new Processo[6];
+        if(fbloqueado.getListap().size()>0){
+            for (int i =0; i<fbloqueado.getListap().size();i++){					//percorremos uma vez cada processo ocupando um dispositivo
+                    p=fbloqueado.getListap().get(i);    //p=processo na posicao i
+                    //p.setTemposervico(p.getTemposervico() -1); //Diminuimos o tempo geral de execucao 
+                    int qualrecurso=0;// [0]=impressora , [1]=scanner, [2]=modem , [3]=cdrom
+                    int tempodebloqueio=0;
+
+                    //sequencia de testes pra saber o que esta ocupando e diminuir o tempo dessa ocupacao.
+                    if(p.ocupando==imp1){
+                        System.out.println("tempo de bloqueio antes: "+ p.im);
+                        tempodebloqueio=--p.im;   
+                    }
+                    else if(p.ocupando==imp2){
+                        System.out.println("tempo de bloqueio antes: "+ p.im);
+                        tempodebloqueio=--p.im;    
+                    }
+                    else if(p.ocupando==scan){
+                        System.out.println("tempo de bloqueio antes: "+ p.s);
+                        tempodebloqueio=--p.s;
+                        qualrecurso=1;
+                    }
+                    
+                    else if(p.ocupando==modem){
+                        System.out.println("tempo de bloqueio antes: "+ p.m);
+                        tempodebloqueio=--p.m;
+                        qualrecurso=2;
+                    }
+                    else if(p.ocupando==cd1){
+                        System.out.println("tempo de bloqueio antes: "+ p.cd);
+                        tempodebloqueio=--p.cd;
+                        qualrecurso=3;
+                    }
+                    else if(p.ocupando==cd2){
+                        System.out.println("-----------------------------------------\ntempo de bloqueio antes: "+ p.cd);
+                        tempodebloqueio=--p.cd;
+                        qualrecurso=3;
+                    }
+                    System.out.println("tempo de bloqueio depois: "+ tempodebloqueio);
+                    System.out.println("Dados referentes a P"+p.getId()+"\n------------------------------------------");
+
+
+
+                    if ( tempodebloqueio<=0){ //se o processo nao precisa continuar usando recurso
+
+                            //mudanca de estados
+                            
+
+                            //atualizamos as informacoes das listas e dos recursos
+
+                            //fbloqueado.getListap().remove(p);
+                            lp[contador++]=p;
+                            System.out.println("listaRec de P"+ p.getId()+" Antes: "+ p.getListarec()[qualrecurso]);
+                            int [] nova = p.getListarec();//atualizar a lista de recursos necessarios no processo
+                            nova[qualrecurso]=nova[qualrecurso]-1;
+                            p.setListarec(nova);
+                            System.out.println("listaRec de P"+ p.getId()+" depois: "+ p.getListarec()[qualrecurso]);
+                            
+
+                    }
+
+
+            }
+            for(int j=0;j<contador;j++){    
+                if(lp[j]!=null){
+                    Processo proc =lp[j];
+                    fbloqueado.getListap().remove(proc);
+                    System.out.println("FILA DE BLOQUEIO NO FINAL DA REMOCAO");
+                    fbloqueado.imprimeFila(fbloqueado);
+                    //System.out.println("Saiu de bloqueado p"+(proc.getId()));
+                    System.out.println("processo P"+ proc.getId()+" Voltou a fila de prontos");
+                    
+                    proc.setEstadoAnterior("BLOQUEADO");
+                    proc.setEstado("PRONTO");
+                    fpronto_u.addProcesso(proc);
+                    
+                    (proc.ocupando).setDisponibilidade(true);//recurso esta disponivel ->ta funcionando
+                    
+                    
+                    proc.ocupando.setUtilizador(null);//ngm esta usando o recurso
+                    proc.ocupando=null;//processo nao usa recurso nenhum
+
+                    }//em testes a ocupacao desta ok
+            }
+
+        }
+    }
 
 }
