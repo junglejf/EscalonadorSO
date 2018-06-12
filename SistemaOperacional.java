@@ -4,10 +4,6 @@ import java.util.ArrayList;
 
 //Responsavel por chamar agentes para inserir, remover, executar, suspender, bloquear e finalizar processos
 public class SistemaOperacional {  //antigo FilaMaster
-    int[]  recdisponiveis = {2,1,1,2}; // Fila de recursos disponiveis
-
-    Processo [] fbloq = new Processo[6]; // Fila de bloqueados
-    //floq = {imp1, imp2, scanner, modem, cd1, cd2}
     
     public SistemaOperacional(){
     }
@@ -61,13 +57,6 @@ public class SistemaOperacional {  //antigo FilaMaster
         }
         
         fatual.setListap(nova);
-        //MOD 
-        System.out.print(fatual.getNome()+": ");
-        for(int i = 0; i < fatual.getListap().size(); i++){
-            System.out.println(fatual.getListap().get(i).getId());
-        }
-        System.out.println();
-        //
         return "";
     }
     
@@ -82,9 +71,20 @@ public class SistemaOperacional {  //antigo FilaMaster
             return "Fila vazia";
         }
     }
+    
+    public String removerPos(Fila forigem, int pos){
+        if(!forigem.getListap().isEmpty()){
+            Processo p = forigem.getListap().get(pos);
+            p.setEstadoAnterior(forigem.getNome());
+            forigem.getListap().remove(pos);
+            return "";
+        }else{
+            return "Fila vazia";
+        }
+    }
 
     
-    public String finalizar(ArrayList<Processo> fexec, Processo p, Cpu processador, MemoriaRam mram){
+    public String finalizar(ArrayList<Processo> executados, Processo p, Cpu processador, MemoriaRam mram){
         if(mram.getEspacoAlocado() > 0){
             mram.setEspacoAlocado(mram.getEspacoAlocado() - p.getTamanho()); //libera memoria
         }else{
@@ -93,19 +93,17 @@ public class SistemaOperacional {  //antigo FilaMaster
         mram.getFila_proc().remove(p);
         processador.setUtilizador(null);        //ocioso
         processador.setDisponibilidade(true);   //disponivel
-        fexec.remove(p);
+        //fexec.remove(p); MODH
         //System.out.println("removeu exec "+p.getId());
         p.setEstado("FINALIZADO");
         return "";
     }
     
     public boolean listaZerada(int [] lista){
-        boolean resp = true;
+        boolean resp = false;
         int tam = lista.length;
         for(int i = 0; i < tam; i++){
-            if(lista[i] != 0){
-                resp = false;
-            }
+            resp = (lista[i] == 0);
         }
         return resp; //true se lista zerada
     }
@@ -116,33 +114,46 @@ public class SistemaOperacional {  //antigo FilaMaster
     //_____________CPU_____________
     
     //escolhe processo que sera executado
-    public String dispatch(ArrayList<Processo> fexec, Cpu processador, Fila fpronto_tr, Fila fpronto_u, Fila fbck1, Fila fbck2, Fila fbck3, 
+    public String dispatch(ArrayList<Processo> executados, Cpu processador, Fila fpronto_tr, Fila fpronto_u, Fila fbck1, Fila fbck2, Fila fbck3, 
             Fila fbloqueado,  Fila fbloqsuspenso, Fila fprontosuspenso, MemoriaRam mram, MemoriaHd hd, Recurso imp1, Recurso imp2, Recurso modem, Recurso scan, Recurso cd1, Recurso cd2){
         if(!fpronto_tr.getListap().isEmpty()){
-            return executarProcessoTr(fexec, processador, fpronto_tr, fpronto_u, fbloqueado,  fbloqsuspenso, fprontosuspenso,  fbck1,  fbck2,  fbck3, mram,  hd);
+            return executarProcessoTr(executados, processador, fpronto_tr, fpronto_u, fbloqueado,  fbloqsuspenso, fprontosuspenso,  fbck1,  fbck2,  fbck3, mram,  hd);
         }else{
-            return executarProcessoUsuario(fexec, processador, fpronto_u, fbloqueado, fbck1,  fbck2,  fbck3, imp1, imp2, modem, scan, cd1, cd2);
+            return executarProcessoUsuario(executados, processador, fpronto_u, fbloqueado, fbck1,  fbck2,  fbck3, imp1, imp2, modem, scan, cd1, cd2);
         }
     }
     
     //encontrou processo que vai ser executado pela CPU
-    public String inserirCpu (ArrayList<Processo> fexec, Processo p, Cpu processador){
+    public String inserirCpu (ArrayList<Processo> executados, Processo p, Cpu processador){
         //System.out.println("~ "+executando(p, fexec));
         //if(!p.getEstado().equals("EXECUTANDO") && !executando(p, fexec)){ MOD
+        boolean r = false;
+        for(int x = 0; x < executados.size(); x++){
+            r = (p.getId() == executados.get(x).getId()); //true se ta na lista de executados
+            if(r){ //true se achou
+                break;
+            }
+        }
+        if(!r){ //se nao ta na lista de executados, adiciona
+            executados.add(p);
+        }
+        
+        
             p.setEstado("EXECUTANDO");
             processador.setUtilizador(p);
             processador.setQuantum(2);
             processador.setDisponibilidade(false);
-           
             //fexec.add(p); MOD
+        
         //}
+        
         return "p"+p.intToString(p.getId());
     }
     
-    public boolean executando(Processo p, ArrayList<Processo> fexec){
+    public boolean executando(Processo p, ArrayList<Processo> executados){
         boolean r = false;
-        for(int i = 0; i < fexec.size(); i++){
-            if(p.getId() == fexec.get(i).getId()){
+        for(int i = 0; i < executados.size(); i++){
+            if(p.getId() == executados.get(i).getId()){
                 r = true;
                 break;
             }
@@ -151,7 +162,7 @@ public class SistemaOperacional {  //antigo FilaMaster
     }
     
     //executa processo
-    public String processa(ArrayList<Processo> fexec, Cpu processador, Fila fbck1, Fila fbck2, Fila fbck3, MemoriaRam mram){
+    public String processa(ArrayList<Processo> executados, Cpu processador, Fila fbck1, Fila fbck2, Fila fbck3, MemoriaRam mram){
         Processo proc = processador.getUtilizador();
         if(proc == null){
             return "SEM PROCESSO. ";
@@ -159,11 +170,13 @@ public class SistemaOperacional {  //antigo FilaMaster
         proc.setTemposervico(proc.getTemposervico() - 1);
         if(proc.getTemposervico() <= 0){
             //se tempo de servico de p == 0 -> processo finalizado
-            finalizar(fexec, proc, processador, mram);
-        }
+            finalizar(executados, proc, processador, mram);
+        }else
         if(proc.getPrioridade() != 0){//se processo de usuario
             processador.setQuantum(processador.getQuantum() - 1);
             if(processador.getQuantum() == 0){
+                executados.add(proc);
+                //MODH
                 String f_anterior = proc.getEstadoAnterior();
                 if(f_anterior.equals(fbck1.getNome())){ //se tava na fila 1 vai pra fila 2
                     if(proc.getTemposervico() > 0){ 
@@ -182,7 +195,7 @@ public class SistemaOperacional {  //antigo FilaMaster
                         inserePriori(proc, fbck1);
                     }
                 }
-                fexec.remove(proc);
+                //fexec.remove(proc); MODH
                 //System.out.println("removeu exec "+proc.getId());
                 processador.setDisponibilidade(true);
                 
@@ -197,13 +210,13 @@ public class SistemaOperacional {  //antigo FilaMaster
     
         //____________EXECUCAO TR_____________
         //Executa primeiro processo de tempo real pronto
-    public String executarProcessoTr(ArrayList<Processo> fexec, Cpu processador, Fila fpronto_tr, Fila fpronto_u, Fila fbloqueado,  Fila fbloqsuspenso, Fila fprontosuspenso, Fila fbck1, Fila fbck2, Fila fbck3, MemoriaRam mram, MemoriaHd hd){
+    public String executarProcessoTr(ArrayList<Processo> executados, Cpu processador, Fila fpronto_tr, Fila fpronto_u, Fila fbloqueado,  Fila fbloqsuspenso, Fila fprontosuspenso, Fila fbck1, Fila fbck2, Fila fbck3, MemoriaRam mram, MemoriaHd hd){
 	Processo proximoTr = fpronto_tr.getListap().get(0);    //pega primeiro processo tr da fila de prontos
         int espacoAlocado = mram.getEspacoAlocado();          //quanto de memoria esta sendo usada
 	if(espacoAlocado + fpronto_tr.getListap().get(0).getTamanho() > mram.getEspaco()){ //se memoria insuficiente
             suspenderProc(fpronto_tr.getListap().get(0), fpronto_u, fbloqueado, fbloqsuspenso, fprontosuspenso, fbck1,  fbck2,  fbck3, mram, hd);//suspende processo usuario
 	}
-	inserirCpu(fexec, proximoTr, processador);               //insere processo tr na fila de execucao
+	inserirCpu(executados, proximoTr, processador);               //insere processo tr na fila de execucao
         remover(fpronto_tr);          //remove processo tr da fila de pronto
         
         return "p"+proximoTr.intToString(proximoTr.getId());
@@ -212,42 +225,63 @@ public class SistemaOperacional {  //antigo FilaMaster
     
         //__________EXECUCAO USUARIO__________
         ////Executa primeiro processo de usuario pronto
-    public String executarProcessoUsuario(ArrayList<Processo> fexec, Cpu processador, Fila fpronto_u, Fila fbloqueado, Fila fbck1, Fila fbck2, Fila fbck3,
+    public String executarProcessoUsuario(ArrayList<Processo> executados, Cpu processador, Fila fpronto_u, Fila fbloqueado, Fila fbck1, Fila fbck2, Fila fbck3,
             Recurso imp1, Recurso imp2, Recurso modem, Recurso scan, Recurso cd1, Recurso cd2){
         if(!fpronto_u.getListap().isEmpty()){//se fila nao vazia
             Processo proximoPu = fpronto_u.getListap().get(0);
             int [] l = proximoPu.getListarec();
             if(!listaZerada(l)){            //se processo usa recursos
                 bloquear(fbloqueado, fpronto_u, imp1, imp2, modem, scan, cd1, cd2);
-                //bloqueio(this.fbloq, this.recdisponiveis, proximoPu);
-                //remover(fpronto_u);
             }else{
                 inserePriori(proximoPu, fbck1);//insere na primeira fila do feedback com prioridade
                 remover(fpronto_u);
             }
         }
-        return(executaFeedback(fexec, processador, fbck1, fbck2, fbck3));   
+        return(executaFeedback(executados, processador, fbck1, fbck2, fbck3));   
     }
 
-    public String executaFeedback(ArrayList<Processo> fexec, Cpu processador, Fila fbck1, Fila fbck2, Fila fbck3){
+    public String executaFeedback(ArrayList<Processo> executados, Cpu processador, Fila fbck1, Fila fbck2, Fila fbck3){
         if(!fbck1.getListap().isEmpty()){           //se primeira fila nao vazia
-            Processo proximoPu = fbck1.getListap().get(0);//executa primeiro processo
-            inserirCpu(fexec, proximoPu, processador);
-            remover(fbck1);
-            return "p"+proximoPu.intToString(proximoPu.getId());
-        }else if(!fbck2.getListap().isEmpty()){
-            Processo proximoPu = fbck2.getListap().get(0);
-            inserirCpu(fexec, proximoPu, processador);
-            remover(fbck2);
-            return "p"+proximoPu.intToString(proximoPu.getId());
-        }else if(!fbck3.getListap().isEmpty()){
-            Processo proximoPu = fbck3.getListap().get(0);
-            inserirCpu(fexec, proximoPu, processador);
-            remover(fbck3);
-            return "p"+proximoPu.intToString(proximoPu.getId());
-        }else{
-            return "Nenhum processo de usuario na fila.";
+            int pos = 0;
+            while(pos < fbck1.getListap().size()){
+                Processo proximoPu = fbck1.getListap().get(pos);//executa primeiro processo
+                if(!executando(proximoPu, executados)){
+                    inserirCpu(executados, proximoPu, processador);
+                    removerPos(fbck1, pos);
+                    return "p"+proximoPu.intToString(proximoPu.getId());
+                }else{
+                    pos++;
+                }
+            }
+        
+            
+        }if(!fbck2.getListap().isEmpty()){
+            int pos = 0;
+            while(pos < fbck2.getListap().size()){
+                Processo proximoPu = fbck2.getListap().get(pos);//executa primeiro processo
+                if(!executando(proximoPu, executados)){
+                    inserirCpu(executados, proximoPu, processador);
+                    removerPos(fbck2, pos);
+                    return "p"+proximoPu.intToString(proximoPu.getId());
+                }else{
+                    pos++;
+                }
+            }
+            
+        }if(!fbck3.getListap().isEmpty()){
+            int pos = 0;
+            while(pos < fbck3.getListap().size()){
+                Processo proximoPu = fbck3.getListap().get(pos);//executa primeiro processo
+                if(!executando(proximoPu, executados)){
+                    inserirCpu(executados, proximoPu, processador);
+                    removerPos(fbck3, pos);
+                    return "p"+proximoPu.intToString(proximoPu.getId());
+                }else{
+                    pos++;
+                }
+            }
         }
+        return "";
     }
 
     //_________BLOQUEIO______________
@@ -259,7 +293,6 @@ public class SistemaOperacional {  //antigo FilaMaster
         
         
         Processo p = fpronto.getListap().get(0);
-        
         int t = p.getTamanho();
         int nrec = 1; //No minimo CPU
         for(int i = 0; i < p.getListarec().length; i++){
@@ -267,19 +300,7 @@ public class SistemaOperacional {  //antigo FilaMaster
         }
         int porcentagem = t/nrec; //tempo em cada recurso
         boolean ok = false; //se conseguiu usar recurso
-        int i1=0,i2=0,c1=0,c2=0,m = p.getDispositivoDaListaRec(1)*porcentagem, s = p.getDispositivoDaListaRec(2)*porcentagem;
-        if(p.getDispositivoDaListaRec(0)==2){
-            i1 = p.getDispositivoDaListaRec(0)*porcentagem/2; 
-            i2 = p.getDispositivoDaListaRec(0)*porcentagem/2;
-        }else if(p.getDispositivoDaListaRec(0)==1){
-            i1 = p.getDispositivoDaListaRec(0)*porcentagem;
-        }
-        if(p.getDispositivoDaListaRec(3)==2){
-            c1=p.getDispositivoDaListaRec(3)*porcentagem/2;
-            c2 = p.getDispositivoDaListaRec(3)*porcentagem/2;
-        }else if(p.getDispositivoDaListaRec(3)==1){
-            c1 = p.getDispositivoDaListaRec(3)*porcentagem;
-        }
+        int i1 = porcentagem, i2 = porcentagem, m = porcentagem, s = porcentagem, c1 = porcentagem, c2 = porcentagem;
         while(!listaZerada(p.getListarec())){
             
         //__________IMPRESSORA__________
@@ -437,30 +458,18 @@ public class SistemaOperacional {  //antigo FilaMaster
                     }
                 }
             }
-            System.out.println("aqui"+p.getId()+ok);
-            if(p.getTemposervico()==0){
-                
-            }
+            
             if(ok == true){
                 inserir(p,fbloqueado);
                 remover(fpronto);
                 p.setTemposervico(p.getTemposervico()-1);
-                
-                return "";
-                //int c [] = new int[4];
-               // p.setListarec(c);
             }
         }
-        if((!modem.isDisponibilidade())&&(!scan.isDisponibilidade())&&(!cd1.isDisponibilidade())&&(!cd2.isDisponibilidade())&&(!imp1.isDisponibilidade())&&(!imp2.isDisponibilidade())){
-            remover(fbloqueado);
-            inserir(p,fpronto);
-        }
+        
         return "";
         /* Processo continua consumindo memoria ram, e a fila de bloqueados nao possui ordem.
         */
     }
-    
-   
     
     //__________SUSPENSAO_____________
 
@@ -563,84 +572,5 @@ public class SistemaOperacional {  //antigo FilaMaster
 	return "";	
     }
    //__Transforma o ID de um processo em uma string para dar print na tela__
-        public void bloqueio (Processo[] fbloq,int[]  recdisponiveis,Processo p){ // ve um recurso do processo que esteja disponivel e o aloca.
-            remover(p);
-            if((p.getDispositivoDaListaRec(0)>0) && (recdisponiveis[0]>0)) { //Verifica se dispositivo usa impressoras e se ha uma disponivel
-                    if(p.getDispositivoDaListaRec(0)==1){//checa se o programa usa apenas uma vez a impressora
-                            if (fbloq[0]==null){//se a primeira impressora nao estiver sendo usada, designamos ela.
-                                    fbloq[0]=p;	//ocupamos a 1 impressora com o processo p
-                                    p.setDisipositivoDaListaRec(0,0);// dizemos agora que p nao precisa mais usar impressoras ao terminar seu tempo.
-                            }else if (fbloq[1]==null){ 	//caso a segunda nao esteja sendo usada, designamos ela.
-                                    fbloq[1]=p;
-                                    p.setDisipositivoDaListaRec(0,0);
-                            }
-                    } 
-                    if(p.getDispositivoDaListaRec(0)==2){ // checa se usa duas vezes a impressora
-                            if (fbloq[0]==null){			//se a primeira nao estiver em uso, designamos ela
-                                    fbloq[0]=p;
-                                    p.setDisipositivoDaListaRec(0,1);
-                            }else if (fbloq[1]==null){		// caso contrario usamos a segunda
-                                    fbloq[1]=p;
-                                    p.setDisipositivoDaListaRec(0,1);
-                            }
-                    }
-            }
-            if((p.getDispositivoDaListaRec(1)>0 )&&( recdisponiveis[1]>0)) {//Checamos se p usa scanner, e se o nosso esta disponivel
-                    if (fbloq[2]==null){										//estou sendo redundante, mas quero saber se o scanner esta sendo ocupado por um processo
-                                    fbloq[2]=p;											//ocupamos o scanner com o processo p
-                                    p.setDisipositivoDaListaRec(1,0);					//dizemos agora que o processo ao sair de scanner, nao precisa mais voltar
-                            }
-                    }
-            if((p.getDispositivoDaListaRec(2)>0) && (recdisponiveis[2]>0)) {	//checamos se p usa modem, e se o nosso esta disponivel
-                    if (fbloq[3]==null){										//novamente redundante, vendo se o modem esta ocupado com algum processo
-                                    fbloq[3]=p;											//ocupamos o modem com P
-                                    p.setDisipositivoDaListaRec(2,0);					//dizemos que ao processo sair do modem, nao precisa mais voltar.
-                    }
-            }
-            if((p.getDispositivoDaListaRec(3)>0) && (recdisponiveis[3]>0)) {       	//checamos se P usa CD-Rom e se temos um disponivel
-                    if(p.getDispositivoDaListaRec(3)==1)						//se P usa 1 CD_rom
-                            if (fbloq[4]==null){									//se CDROM1 esta sem processos
-                                    fbloq[4]=p;											//Ocupamos cdrom1 com o processo P
-                                    p.setDisipositivoDaListaRec(3,0);					//dizemos que ao sair, P nao precisara mais usar o cdrom
-                            }else if (fbloq[5]==null){								//se CDROM2 esta sem processos
-                                    fbloq[5]=p;											//Ocupamos cdrom2 com o processo P
-                                    p.setDisipositivoDaListaRec(3,0);					//Dizemos que ao sair, P nao precisa mais usar o cdrom
-                            }
-                    if(p.getDispositivoDaListaRec(0)==2){						//Se P usa 2 Cd-Rom
-                            if (fbloq[4]==null){										
-                                    fbloq[4]=p;
-                                    p.setDisipositivoDaListaRec(3,1);					//dizemos que ao sair, p ainda precisara usar o cdrom
-
-                            }else if (fbloq[5]==null){
-                                    fbloq[5]=p;
-                                    p.setDisipositivoDaListaRec(3,1);  					//dizemos que ao sair, p ainda precisara usar o cdrom
-
-                            }
-                    }            
-            }                    
-
-    }
-    public void processa_bloqueado(Fila fbloqueado,Recurso [] recdisponiveis, Fila fpronto){ //reduz o tempo dos processos bloqueados.
-        Processo p;
-        for (int i =0; i<fbloqueado.getListap().size();i++){					//percorremos uma vez cada processo ocupando um dispositivo
-                p=fbloqueado.getListap().get(i);
-                p.setTemposervico(p.getTemposervico() -1); //Diminuimos o tempo geral de execucao 
-
-                //diminuimos o tempo necessario para usar o recurso
-
-                if ( p.getTemposervico() <= 0){ //se o processo nao precisa continuar usando recurso
-
-                        
-                        p.setEstadoAnterior("BLOQUEADO");
-                        p.setEstado("FINALIZADO");
-                        System.out.println("#L636: Saiu de bloqueado p"+(p.intToString(p.getId())));
-                        fbloqueado.getListap().remove(p);
-                        //atualizamos a quantidade de recursos disponiveis
-
-                }
-                   
-        }
-
-    }
 
 }

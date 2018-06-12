@@ -39,7 +39,7 @@ public class Main {
         ArrayList<Processo> listaBloqSusp = new ArrayList();
         ArrayList<Processo> listaProntoSusp = new ArrayList();
         
-        ArrayList<Processo> fexec = new ArrayList();
+        ArrayList<Processo> executados = new ArrayList(); //lista de processos que acabaram de passar pela CPU
   
         
         //____________FILAS____________
@@ -60,13 +60,40 @@ public class Main {
         Random random = new Random();
         int[] fila_rec = {0, 0, 0, 0};
         
+        // CASO TESTE
+        Processo p0 = new Processo(0, 0, 8, 265, fila_rec, "NOVO", "");
+        Processo p1 = new Processo(1, 0, 13, 360, fila_rec, "NOVO", ""); 
+        Processo p2 = new Processo(2, 3, 15, 477, fila_rec, "NOVO", ""); 
+        Processo p3 = new Processo(3, 1, 6, 445, fila_rec, "NOVO", ""); 
+        Processo p4 = new Processo(4, 2, 6, 375, fila_rec, "NOVO", ""); 
+        Processo p5 = new Processo(5, 0, 7, 157, fila_rec, "NOVO", ""); 
+        Processo p6 = new Processo(6, 3, 7, 82, fila_rec, "NOVO", ""); 
+        Processo p7 = new Processo(7, 2, 18, 118, fila_rec, "NOVO", ""); 
+        Processo p8 = new Processo(8, 0, 8, 489, fila_rec, "NOVO", ""); 
+        Processo p9 = new Processo(9, 2, 8, 463, fila_rec, "NOVO", "");
+        
+        so.inserir(p0, fentrada);
+        so.inserir(p1, fentrada);
+        so.inserir(p2, fentrada);
+        so.inserir(p3, fentrada);
+        so.inserir(p4, fentrada);
+        so.inserir(p5, fentrada);
+        so.inserir(p6, fentrada);
+        so.inserir(p7, fentrada);
+        so.inserir(p8, fentrada);
+        so.inserir(p9, fentrada);
+
+        /*
+        // MOD
         //cria processos randomicamente e acrescenta na fila
         for(int i=0; i<10;i++){//impressoras        modem            scanner             cds  
             //int[] fila_rec = {random.nextInt(3),random.nextInt(2),random.nextInt(2),random.nextInt(3)};
                                 //tchegada  prioridade          tservico             tamanho       recursos   estado estado anterior
+                                
             Processo p = new Processo(i, random.nextInt(4), random.nextInt(20), random.nextInt(512), fila_rec, "NOVO", "");
             so.inserir(p, fentrada);
         }
+        */
         
     //___________INICIALIZACAO_____________
         fentrada.imprimeFila(fentrada);
@@ -74,13 +101,9 @@ public class Main {
                 
         System.out.println("MP: "+mram.getEspacoAlocado()+" MBytes ");
                 
-        /*
-        fpronto_tr.imprimeProc(fpronto_tr);
-        fpronto_u.imprimeProc(fpronto_u);
-        fbloqueado.imprimeProc(fbloqueado);
-        fprontosuspenso.imprimeProc(fprontosuspenso);
-        fbloqsuspenso.imprimeProc(fbloqsuspenso);
-        */
+        
+        
+        
         
         System.out.println();
         System.out.println("#############################################");
@@ -131,86 +154,98 @@ public class Main {
                 }
                 System.out.println();
                 
+                fpronto_tr.imprimeProc(fpronto_tr);
+                fpronto_u.imprimeProc(fpronto_u);
                 
                 System.out.println();
                 System.out.println("#############################################");
                 System.out.println("#                                           #");
                 System.out.println("#  CPU1:                                    #");
                 if(cpu1.isDisponibilidade()){
-                    so.dispatch(fexec, cpu1, fpronto_tr, fpronto_u, fbck1, fbck2, fbck3, fbloqueado,
+                    so.dispatch(executados, cpu1, fpronto_tr, fpronto_u, fbck1, fbck2, fbck3, fbloqueado,
                             fbloqsuspenso, fprontosuspenso,  mram,  hd, imp1, imp2, modem, scan, cd1, cd2);
                     
-                    System.out.println("   "+so.processa(fexec, cpu1, fbck1, fbck2, fbck3, mram));
+                    System.out.println("   "+so.processa(executados, cpu1, fbck1, fbck2, fbck3, mram));
                 }else{
-                    System.out.println("   "+so.processa(fexec, cpu1, fbck1, fbck2, fbck3, mram));
+                    System.out.println("   "+so.processa(executados, cpu1, fbck1, fbck2, fbck3, mram));
                 }
-                if(cpu1.getUtilizador() != null && !so.executando(cpu1.getUtilizador(), fexec)){
-                    fexec.add(cpu1.getUtilizador());
-                    //System.out.println("proc1: "+cpu1.getUtilizador().getId());
+                
+                System.out.println("executados: ");
+                for(int k = 0; k < executados.size(); k++){
+                    System.out.print("P"+executados.get(k).getId()+" ");
                 }
+                System.out.println();
                 
                 System.out.println("#                                           #");
                 System.out.println("#  CPU2:                                    #");
                 if(cpu2.isDisponibilidade()){
-                    so.dispatch(fexec, cpu2, fpronto_tr, fpronto_u, fbck1, fbck2, fbck3, fbloqueado,
+                    so.dispatch(executados, cpu2, fpronto_tr, fpronto_u, fbck1, fbck2, fbck3, fbloqueado,
                             fbloqsuspenso, fprontosuspenso,  mram,  hd, imp1, imp2, modem, scan, cd1, cd2);
-                    System.out.println("   "+so.processa(fexec, cpu2, fbck1, fbck2, fbck3, mram));
+                    System.out.println("   "+so.processa(executados, cpu2, fbck1, fbck2, fbck3, mram));
                 }else{
-                    System.out.println("   "+so.processa(fexec, cpu2, fbck1, fbck2, fbck3, mram));
+                    System.out.println("   "+so.processa(executados, cpu2, fbck1, fbck2, fbck3, mram));
                 }
                 
-                if(cpu2.getUtilizador() != null && !so.executando(cpu2.getUtilizador(), fexec)){
-                    fexec.add(cpu2.getUtilizador());
-                    //System.out.println("proc2: "+cpu2.getUtilizador().getId());
+                System.out.println("executados: ");
+                for(int k = 0; k < executados.size(); k++){
+                    System.out.print("P"+executados.get(k).getId()+" ");
                 }
+                System.out.println();
                 
                 System.out.println("#                                           #");
                 System.out.println("#  CPU3:                                    #");
                 if(cpu3.isDisponibilidade()){
-                    so.dispatch(fexec, cpu3, fpronto_tr, fpronto_u, fbck1, fbck2, fbck3, fbloqueado,
+                    so.dispatch(executados, cpu3, fpronto_tr, fpronto_u, fbck1, fbck2, fbck3, fbloqueado,
                             fbloqsuspenso, fprontosuspenso,  mram,  hd, imp1, imp2, modem, scan, cd1, cd2);
-                    System.out.println("   "+so.processa(fexec, cpu3, fbck1, fbck2, fbck3, mram));
+                    System.out.println("   "+so.processa(executados, cpu3, fbck1, fbck2, fbck3, mram));
                 }else{
-                    System.out.println("   "+so.processa(fexec, cpu3, fbck1, fbck2, fbck3, mram));
+                    System.out.println("   "+so.processa(executados, cpu3, fbck1, fbck2, fbck3, mram));
                 }
                 
-                if(cpu3.getUtilizador() != null && !so.executando(cpu3.getUtilizador(), fexec)){
-                    fexec.add(cpu3.getUtilizador());
-                    //System.out.println("proc3: "+cpu3.getUtilizador().getId());
+                System.out.println("executados: ");
+                for(int k = 0; k < executados.size(); k++){
+                    System.out.print("P"+executados.get(k).getId()+" ");
                 }
+                System.out.println();
                 
                 System.out.println("#                                           #");
                 System.out.println("#  CPU4:                                    #");
                 if(cpu4.isDisponibilidade()){
-                    so.dispatch(fexec, cpu4, fpronto_tr, fpronto_u, fbck1, fbck2, fbck3, fbloqueado,
+                    so.dispatch(executados, cpu4, fpronto_tr, fpronto_u, fbck1, fbck2, fbck3, fbloqueado,
                             fbloqsuspenso, fprontosuspenso,  mram,  hd, imp1, imp2, modem, scan, cd1, cd2);
-                    System.out.println("   "+so.processa(fexec, cpu4, fbck1, fbck2, fbck3, mram));
+                    System.out.println("   "+so.processa(executados, cpu4, fbck1, fbck2, fbck3, mram));
                 }else{
-                    System.out.println("   "+so.processa(fexec, cpu4, fbck1, fbck2, fbck3, mram));
+                    System.out.println("   "+so.processa(executados, cpu4, fbck1, fbck2, fbck3, mram));
                 }
                 
-                if(cpu4.getUtilizador() != null && !so.executando(cpu4.getUtilizador(), fexec)){
-                    fexec.add(cpu4.getUtilizador());
-                    //System.out.println("proc4: "+cpu4.getUtilizador().getId());
+                System.out.println("executados: ");
+                for(int k = 0; k < executados.size(); k++){
+                    System.out.print("P"+executados.get(k).getId()+" ");
                 }
-                
-                
+                System.out.println();
+                               
                 contador++;
                 System.out.println("#                                           #");
                 System.out.println("#############################################");
-                /*
-                System.out.println(fexec.size());
                 
-                for(int k = 0; k < fexec.size(); k++){
-                    System.out.print("P"+fexec.get(k).getId()+" ");
+                fbck1.imprimeProc(fbck1);
+                fbck2.imprimeProc(fbck2);
+                fbck3.imprimeProc(fbck3);
+                //fbloqueado.imprimeProc(fbloqueado);
+                //fprontosuspenso.imprimeProc(fprontosuspenso);
+                //fbloqsuspenso.imprimeProc(fbloqsuspenso);
+                
+                //MODH
+                System.out.println("executados: ");
+                for(int k = 0; k < executados.size(); k++){
+                    System.out.print("P"+executados.get(k).getId()+" ");
+                }
+                System.out.println();
+                
+                while(!executados.isEmpty()){
+                    executados.remove(0);
                 }
                 
-                for(int k = 0; k < fexec.size(); k++){
-                    if(!fexec.get(k).getEstado().equals("EXECUTANDO")){
-                        fexec.remove(fexec.get(k));
-                    }
-                }
-                */
                 System.out.println();
             }
             
